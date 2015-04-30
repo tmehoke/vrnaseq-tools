@@ -129,35 +129,35 @@ tar -xzf "$KRAKEN_HOME/$DB/taxonomy/taxdump.tar.gz"
 # initializing names.new and nodes.new
 
 # new taxids will start at this value + 1
-offset=1000000000
+offset1=1000000000
 
 # initialize names.new with Influenza A segments
-echo -e "$(($offset+1))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+2))\t|\tPB1\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+3))\t|\tPA,PA-X\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+4))\t|\tHA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+5))\t|\tNP\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+6))\t|\tNA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+7))\t|\tM1,M2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+8))\t|\tNS1,NS2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+1))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+2))\t|\tPB1\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+3))\t|\tPA,PA-X\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+4))\t|\tHA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+5))\t|\tNP\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+6))\t|\tNA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+7))\t|\tM1,M2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+8))\t|\tNS1,NS2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
 
 # initialize names.new with Influenza B segments
-echo -e "$(($offset+9))\t|\tPB1\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+10))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+11))\t|\tPA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+12))\t|\tHA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+13))\t|\tNP\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+14))\t|\tNA,NB\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+15))\t|\tM1,BM2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-echo -e "$(($offset+16))\t|\tNS\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+9))\t|\tPB1\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+10))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+11))\t|\tPA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+12))\t|\tHA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+13))\t|\tNP\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+14))\t|\tNA,NB\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+15))\t|\tM1,BM2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset1+16))\t|\tNS\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
 
 # initialize nodes.new with Influenza A segments
 for i in {1..8}; do
-	echo -e "$(($offset+$i))\t|\t11320\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+	echo -e "$(($offset1+$i))\t|\t11320\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 done
 # initialize nodes.new with Influenza B segments
 for i in {9..16}; do
-	echo -e "$(($offset+$i))\t|\t11520\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+	echo -e "$(($offset1+$i))\t|\t11520\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 done
 
 #---------------------------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ for segment in {1..8}; do
 				cut -d"|" -f4 | cut -d":" -f2 | egrep '^H([0-9]*)N([0-9]*$)' | sort | uniq | while read serotype; do
 			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
 			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+			echo -e "$taxid\t|\t$((segment+$offset1))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			seq 1918 2118 | while read year; do
 				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
 				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
@@ -189,7 +189,7 @@ for segment in {1..8}; do
 				cut -d"|" -f4 | cut -d":" -f2 | egrep '^H([0-9]*)N([0-9]*$)' | sed 's/\(H[0-9]*\)N[0-9]*/\1/' | sort | uniq | while read serotype; do
 			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
 			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+			echo -e "$taxid\t|\t$((segment+$offset1))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			seq 1918 2118 | while read year; do
 				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
 				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
@@ -201,7 +201,7 @@ for segment in {1..8}; do
 				cut -d"|" -f4 | cut -d":" -f2 | egrep '^H([0-9]*)N([0-9]*$)' | sed 's/H[0-9]*\(N[0-9]*\)/\1/' | sort | uniq | while read serotype; do
 			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
 			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
-			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+			echo -e "$taxid\t|\t$((segment+$offset1))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			seq 1918 2118 | while read year; do
 				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
 				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
@@ -317,16 +317,19 @@ taxonomy_build() {
 
 		# add to names.new
 		head -n1 "$fn" | \
-			awk -F"|" -v TAXID="$newtaxid" -v SEGMENT="$segment" -v YEAR="$year" '{
-			ORG=substr($5,10);
-			TYPE=substr($7,9);
-			printf "%d\t|\t%s (%s)\t|\t\t|\tscientific name\t|\n%d\t|\t%s\t|\t\t|\tsegment\t|\n%d\t|\t%d\t|\t\t|\tsubtype\t|\n%d\t|\t%d\t|\t\t|\tyear\t|\n", NR+TAXID-1, ORG, TYPE, NR+TAXID-1, SEGMENT, NR+TAXID-1, TYPE, NR+TAXID-1, YEAR
+			awk -F"|" -v TAXID="$newtaxid" -v SEGMENT="$segment" -v TYPE="$serotype" -v YEAR="$year" '{
+				ORG=substr($5,10);
+				TYPE=substr($7,9);
+				printf("%d\t|\t%s (%s)\t|\t\t|\tscientific name\t|\n", NR+TAXID-1, ORG, TYPE);
+				printf("%d\t|\t%s\t|\t\t|\tsegment\t|\n", NR+TAXID-1, SEGMENT);
+				printf("%d\t|\t%d\t|\t\t|\tsubtype\t|\n", NR+TAXID-1, TYPE);
+				printf("%d\t|\t%d\t|\t\t|\tyear\t|\n", NR+TAXID-1, YEAR);
 			}' >> "$BASE/taxonomy/names.new"
 
-		# identify parent ID
+		# identify segment + serotype ID
 		rootid=$(join -j1 \
-			<(awk -F"\t" -v SEGMENTID=$((segment+1)) '{if($3 == SEGMENTID){print $1}}' "$BASE/taxonomy/nodes.new" | sort -k1b,1) \
-			"$BASE/taxonomy/names.root" | \
+				<(awk -F"\t" -v SEGMENTID=$((segment+$offset1)) '{if($3 == SEGMENTID){print $1}}' "$BASE/taxonomy/nodes.new" | sort -k1b,1) \
+				"$BASE/taxonomy/names.root" | \
 			grep "| $serotype |" | cut -d" " -f1)
 
 		# add to nodes.new
@@ -341,12 +344,13 @@ taxonomy_build() {
 }
 
 # create list of new taxids + filenames
-offset=2000000000
+offset2=2000000000
 find "$BASE/raw/individuals/" -maxdepth 1 -name "*.fna" -print0 | \
-	awk -v OFFSET=$offset 'BEGIN {RS="\000"};  {printf("%d\t%s\n", NR+OFFSET, $0)}' > "$BASE/library/filenames.txt"
+	awk -v OFFSET=$offset2 'BEGIN {RS="\000"};  {printf("%d\t%s\n", NR+OFFSET, $0)}' > "$BASE/library/filenames.txt"
 
 # export variables for GNU parallel
 export BASE
+export offset1
 export -f taxonomy_build
 
 # add all files to taxonomy
