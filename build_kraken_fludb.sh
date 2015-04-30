@@ -12,7 +12,7 @@
 KRAKEN_HOME="/data/indices/kraken"
 DB="fludb_20150325"
 BASE="$KRAKEN_HOME/$DB"
-mkdir -p $KRAKEN_HOME/$DB/{taxonomy,library,raw/individuals}
+mkdir -p $KRAKEN_HOME/$DB/{taxonomy,library,raw/individuals/bad}
 
 
 # creating a kraken flu database using data downloaded from:
@@ -240,43 +240,39 @@ parallel -d $'\n' --colsep $'\t' -a <(sed '$!N;s/\n/\t/' "$BASE/raw/InfA.fixed.f
 #=================================================
 # The below commands were run as a Torque job
 
-offset=$(sort -n "$BASE/taxonomy/names.root" | tail -n1 | cut -f1)
 taxonomy_build() {
 
 	# parse input arguments
-	fn="$1"
-	n="$2"
+	newtaxid="$1"
+	fn="$2"
 
 	# pull out relevant information from header
-	segment=$(head -n1 $fn | cut -d"|" -f6 | cut -d":" -f2)
-	serotype=$(head -n1 $fn | cut -d"|" -f7 | cut -d":" -f2 | egrep '^H[0-9]+N[0-9]+$')
-	year=$(head -n1 $fn | cut -d"|" -f5 | egrep '.*/([0-9]+)$' | sed 's/.*\/\([0-9]*\)/\1/' | sed 's/\(^0[0-9]$\)/20\1/' | \
+	segment=$(head -n1 "$fn" | cut -d"|" -f6 | cut -d":" -f2)
+	serotype=$(head -n1 "$fn" | cut -d"|" -f7 | cut -d":" -f2 | egrep '^H[0-9]+N[0-9]+$')
+	year=$(head -n1 "$fn" | cut -d"|" -f5 | egrep '.*/([0-9]+)$' | sed 's/.*\/\([0-9]*\)/\1/' | sed 's/\(^0[0-9]$\)/20\1/' | \
 		sed 's/\(^[2-9][0-9]$\)/19\1/' | sed 's/\(^1[0-4]$\)/20\1/' | sed 's/\(^1[5-9]$\)/19\1/')
 
 	# remove files that don't contain good information
-	if [[ -z $segment || -z $serotype || -z $year ]]; then
-		mv $fn "$BASE/raw/individuals/bad"
+	if [[ -z "$segment" || -z "$serotype" || -z "$year" ]]; then
+		mv "$fn" "$BASE/raw/individuals/bad/"
 	else
-		#		echo -e "$segment\t$serotype\t$year"
-		#		newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-		newtaxid=$((n + $offset))
 
 		# create gi_taxid_nucl.dmp - two column file: gi, taxid
-		head -n1 $fn | cut -d"|" -f2 | sed 's/[A-Z]*\([0-9]*\)/\1/' | nl -nrz | \
-			awk -v TAXID=$newtaxid '{
-			printf "%d\t%d\n", $2, TAXID
+		head -n1 "$fn" | cut -d"|" -f2 | sed 's/[A-Z]*\([0-9]*\)/\1/' | nl -nrz | \
+			awk -v TAXID="$newtaxid" '{
+				printf "%d\t%d\n", $2, TAXID
 			}' >> "$BASE/taxonomy/gi_taxid_nucl.dmp"
 
 		# subset serotype if on an HA or NA segment
-		if [[ $segment -eq 4 ]]; then
-			serotype=${serotype%%N*}
-		elif [[ $segment -eq 6 ]]; then
-			serotype=N${serotype#H[0-9]*N}
+		if [[ "$segment" -eq 4 ]]; then
+			serotype="${serotype%%N*}"
+		elif [[ "$segment" -eq 6 ]]; then
+			serotype="N${serotype#H[0-9]*N}"
 		fi
 
 		# add to names.dmp
-		head -n1 $fn | \
-			awk -F"|" -v TAXID=$newtaxid -v SEGMENT=$segment -v YEAR=$year '{
+		head -n1 "$fn" | \
+			awk -F"|" -v TAXID="$newtaxid" -v SEGMENT="$segment" -v YEAR="$year" '{
 			ORG=substr($5,10);
 			TYPE=substr($7,9);
 			printf "%d\t|\t%s (%s)\t|\t\t|\tscientific name\t|\n%d\t|\t%s\t|\t\t|\tsegment\t|\n%d\t|\t%d\t|\t\t|\tsubtype\t|\n%d\t|\t%d\t|\t\t|\tyear\t|\n", NR+TAXID-1, ORG, TYPE, NR+TAXID-1, SEGMENT, NR+TAXID-1, TYPE, NR+TAXID-1, YEAR
@@ -290,10 +286,10 @@ taxonomy_build() {
 
 		# add to nodes.dmp
 		join -j1 \
-			<(awk -F"\t" -v ROOTID=$rootid '{if($3 == ROOTID){print $1}}' "$BASE/taxonomy/nodes.dmp" | sort -k1b,1) \
-			"$BASE/taxonomy/names.root" | \
+				<(awk -F"\t" -v ROOTID="$rootid" '{if($3 == ROOTID){print $1}}' "$BASE/taxonomy/nodes.dmp" | sort -k1b,1) \
+				"$BASE/taxonomy/names.root" | \
 			grep "| $year |" | cut -d" " -f1 | \
-			awk -v TAXID=$newtaxid '{
+			awk -v TAXID="$newtaxid" '{
 				printf "%d\t|\t%d\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\n", TAXID, $0
 			}' >> "$BASE/taxonomy/nodes.dmp"
 	fi
@@ -302,7 +298,7 @@ taxonomy_build() {
 # create list of new taxids + filenames
 offset=2000000000
 find "$BASE/raw/individuals/" -maxdepth 1 -name "*.fna" -print0 | \
-	awk -v OFFSET=$offset 'BEGIN {RS="\000"};  {printf("%d %s\n", NR+OFFSET, $0)}' > "$BASE/library/filenames.txt"
+	awk -v OFFSET=$offset 'BEGIN {RS="\000"};  {printf("%d\t%s\n", NR+OFFSET, $0)}' > "$BASE/library/filenames.txt"
 
 # export variables for GNU parallel
 export BASE
