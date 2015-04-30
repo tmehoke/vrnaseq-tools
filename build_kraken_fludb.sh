@@ -210,13 +210,13 @@ gb2gi() {
 	seq="$2"
 	acc=$(echo $header | cut -d"|" -f2)
 	if [[ ! -s "$BASE/raw/individuals/$acc.fna" ]]; then
-		gi=$(grep "$acc" "$acclist" | cut -d"|" -f2)
+		gi=$(grep "^$acc," "$acclist" | cut -d"|" -f2)
 		if [[ -n $gi ]]; then
 			echo $header | sed "s/>/>gi|$gi|/" > "$BASE/raw/individuals/$acc.fna"
 			echo $seq >> "$BASE/raw/individuals/$acc.fna"
 		else
 			echo "Warning: $acc not found in NCBI Influenza A list, checking full GenBank Accession list" >&2
-			gi=$(grep "$acc," "/data/indices/ftp.ncbi.nih.gov/genbank/livelists/GbAccList.0412.2015" | cut -d"," -f3)
+			gi=$(grep "^$acc," "/data/indices/ftp.ncbi.nih.gov/genbank/livelists/GbAccList.0412.2015" | cut -d"," -f3)
 			if [[ -n $gi ]]; then
 				echo $header | sed "s/>/>gi|$gi|/" > "$BASE/raw/individuals/$acc.fna"
 				echo $seq >> "$BASE/raw/individuals/$acc.fna"
