@@ -322,7 +322,7 @@ taxonomy_build() {
 				TYPE=substr($7,9);
 				printf("%d\t|\t%s (%s)\t|\t\t|\tscientific name\t|\n", NR+TAXID-1, ORG, TYPE);
 				printf("%d\t|\t%s\t|\t\t|\tsegment\t|\n", NR+TAXID-1, SEGMENT);
-				printf("%d\t|\t%d\t|\t\t|\tsubtype\t|\n", NR+TAXID-1, TYPE);
+				printf("%d\t|\t%s\t|\t\t|\tsubtype\t|\n", NR+TAXID-1, TYPE);
 				printf("%d\t|\t%d\t|\t\t|\tyear\t|\n", NR+TAXID-1, YEAR);
 			}' >> "$BASE/taxonomy/names.new"
 
