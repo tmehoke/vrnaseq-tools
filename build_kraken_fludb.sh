@@ -126,52 +126,86 @@ tar -xzf "$KRAKEN_HOME/$DB/taxonomy/taxdump.tar.gz"
 
 #---------------------------------------------------------------------------------------------------
 
-# putting every year from 1918 to 2118 under every serotype present
+# initializing names.new and nodes.new
+
 # new taxids will start at this value + 1
 offset=1000000000
+
+# initialize names.new with Influenza A segments
+echo -e "$(($offset+1))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+2))\t|\tPB1\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+3))\t|\tPA,PA-X\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+4))\t|\tHA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+5))\t|\tNP\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+6))\t|\tNA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+7))\t|\tM1,M2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+8))\t|\tNS1,NS2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+
+# initialize names.new with Influenza B segments
+echo -e "$(($offset+9))\t|\tPB1\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+10))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+11))\t|\tPA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+12))\t|\tHA\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+13))\t|\tNP\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+14))\t|\tNA,NB\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+15))\t|\tM1,BM2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+echo -e "$(($offset+16))\t|\tNS\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+
+# initialize nodes.new with Influenza A segments
+for i in {1..8}; do
+	echo -e "$(($offset+$i))\t|\t11320\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+done
+# initialize nodes.new with Influenza B segments
+for i in {9..16}; do
+	echo -e "$(($offset+$i))\t|\t11520\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
+done
+
+#---------------------------------------------------------------------------------------------------
+
+# putting every year from 1918 to 2118 under every serotype present
 for segment in {1..8}; do
 	if [[ $segment -ne 4 && $segment -ne 6 ]]; then
 		sed '$!N;s/\n/\t/' "$BASE/raw/InfA.fixed.fasta" | cut -f1 | grep "Segment:$segment" | \
 				cut -d"|" -f4 | cut -d":" -f2 | egrep '^H([0-9]*)N([0-9]*$)' | sort | uniq | while read serotype; do
-			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.dmp"
-			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.dmp"
+			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
+			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			seq 1918 2118 | while read year; do
-				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.dmp"
-				echo -e "$newtaxid\t|\t$taxid\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.dmp"
+				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
+				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+				echo -e "$newtaxid\t|\t$taxid\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			done
 		done
 	elif [[ $segment -eq 4 ]]; then
 		sed '$!N;s/\n/\t/' "$BASE/raw/InfA.fixed.fasta" | cut -f1 | grep "Segment:$segment" | \
 				cut -d"|" -f4 | cut -d":" -f2 | egrep '^H([0-9]*)N([0-9]*$)' | sed 's/\(H[0-9]*\)N[0-9]*/\1/' | sort | uniq | while read serotype; do
-			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.dmp"
-			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.dmp"
+			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
+			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			seq 1918 2118 | while read year; do
-				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.dmp"
-				echo -e "$newtaxid\t|\t$taxid\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.dmp"
+				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
+				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+				echo -e "$newtaxid\t|\t$taxid\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			done
 		done
 	elif [[ $segment -eq 6 ]]; then
 		sed '$!N;s/\n/\t/' "$BASE/raw/InfA.fixed.fasta" | cut -f1 | grep "Segment:$segment" | \
 				cut -d"|" -f4 | cut -d":" -f2 | egrep '^H([0-9]*)N([0-9]*$)' | sed 's/H[0-9]*\(N[0-9]*\)/\1/' | sort | uniq | while read serotype; do
-			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.dmp"
-			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.dmp"
+			taxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
+			echo -e "$taxid\t|\t$serotype\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+			echo -e "$taxid\t|\t$((segment+$offset))\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			seq 1918 2118 | while read year; do
-				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.dmp" | cut -f1) ))
-				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.dmp"
-				echo -e "$newtaxid\t|\t$taxid\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.dmp"
+				newtaxid=$((1 + $(tail -n1 "$BASE/taxonomy/names.new" | cut -f1) ))
+				echo -e "$newtaxid\t|\t$year\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
+				echo -e "$newtaxid\t|\t$taxid\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|" >> "$BASE/taxonomy/nodes.new"
 			done
 		done
 	fi
 done
 
-# create files that only contain the potential parent nodes for future searching
-cp "$BASE/taxonomy/names.dmp" "$BASE/taxonomy/names.root"
-cp "$BASE/taxonomy/nodes.dmp" "$BASE/taxonomy/nodes.root"
+# create .root files that only contain the potential parent nodes - for future searching
+cp "$BASE/taxonomy/names.new" "$BASE/taxonomy/names.root"
+cp "$BASE/taxonomy/nodes.new" "$BASE/taxonomy/nodes.root"
 
 #---------------------------------------------------------------------------------------------------
 
@@ -189,7 +223,10 @@ db="nuccore"
 term="Influenza"
 wget -q "$utils/esearch.fcgi?db=$db&term=$term&usehistory=y&tool=efetch" -O temp.txt
 
+
+# FIX THIS LINE
 gilist="/path/to/search/results"
+
 
 # sort these two lists and then join them
 sort -t "," -k3,3 "$KRAKEN_HOME/DB/GbAccList.0412.2015.gz" > "$BASE/raw/GbAccList.0412.2015.sorted"
@@ -257,11 +294,11 @@ taxonomy_build() {
 		mv "$fn" "$BASE/raw/individuals/bad/"
 	else
 
-		# create gi_taxid_nucl.dmp - two column file: gi, taxid
+		# create gi_taxid_nucl.new - two column file: gi, taxid
 		head -n1 "$fn" | cut -d"|" -f2 | sed 's/[A-Z]*\([0-9]*\)/\1/' | nl -nrz | \
 			awk -v TAXID="$newtaxid" '{
 				printf "%d\t%d\n", $2, TAXID
-			}' >> "$BASE/taxonomy/gi_taxid_nucl.dmp"
+			}' >> "$BASE/taxonomy/gi_taxid_nucl.new"
 
 		# subset serotype if on an HA or NA segment
 		if [[ "$segment" -eq 4 ]]; then
@@ -270,28 +307,28 @@ taxonomy_build() {
 			serotype="N${serotype#H[0-9]*N}"
 		fi
 
-		# add to names.dmp
+		# add to names.new
 		head -n1 "$fn" | \
 			awk -F"|" -v TAXID="$newtaxid" -v SEGMENT="$segment" -v YEAR="$year" '{
 			ORG=substr($5,10);
 			TYPE=substr($7,9);
 			printf "%d\t|\t%s (%s)\t|\t\t|\tscientific name\t|\n%d\t|\t%s\t|\t\t|\tsegment\t|\n%d\t|\t%d\t|\t\t|\tsubtype\t|\n%d\t|\t%d\t|\t\t|\tyear\t|\n", NR+TAXID-1, ORG, TYPE, NR+TAXID-1, SEGMENT, NR+TAXID-1, TYPE, NR+TAXID-1, YEAR
-			}' >> "$BASE/taxonomy/names.dmp"
+			}' >> "$BASE/taxonomy/names.new"
 
 		# identify parent ID
 		rootid=$(join -j1 \
-			<(awk -F"\t" -v SEGMENTID=$((segment+1)) '{if($3 == SEGMENTID){print $1}}' "$BASE/taxonomy/nodes.dmp" | sort -k1b,1) \
+			<(awk -F"\t" -v SEGMENTID=$((segment+1)) '{if($3 == SEGMENTID){print $1}}' "$BASE/taxonomy/nodes.new" | sort -k1b,1) \
 			"$BASE/taxonomy/names.root" | \
 			grep "| $serotype |" | cut -d" " -f1)
 
-		# add to nodes.dmp
+		# add to nodes.new
 		join -j1 \
-				<(awk -F"\t" -v ROOTID="$rootid" '{if($3 == ROOTID){print $1}}' "$BASE/taxonomy/nodes.dmp" | sort -k1b,1) \
+				<(awk -F"\t" -v ROOTID="$rootid" '{if($3 == ROOTID){print $1}}' "$BASE/taxonomy/nodes.new" | sort -k1b,1) \
 				"$BASE/taxonomy/names.root" | \
 			grep "| $year |" | cut -d" " -f1 | \
 			awk -v TAXID="$newtaxid" '{
 				printf "%d\t|\t%d\t|\tno rank\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\t\t|\n", TAXID, $0
-			}' >> "$BASE/taxonomy/nodes.dmp"
+			}' >> "$BASE/taxonomy/nodes.new"
 	fi
 }
 
@@ -310,6 +347,11 @@ parallel -d $'\n' --colsep $'\t' -a "$BASE/library/filenames.txt" -n 1 -P 16 tax
 
 # end of taxonomy-build torque job
 #=================================================
+
+# append new taxonomy files to full NCBI taxonomy files
+cat "$BASE/taxonomy/names.new" >> "$BASE/taxonomy/names.dmp"
+cat "$BASE/taxonomy/nodes.new" >> "$BASE/taxonomy/nodes.dmp"
+cat "$BASE/taxonomy/gi_taxid_nucl.new" >> "$BASE/taxonomy/gi_taxid_nucl.dmp"
 
 #---------------------------------------------------------------------------------------------------
 
