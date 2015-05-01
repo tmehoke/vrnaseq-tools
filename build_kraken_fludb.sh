@@ -7,14 +7,26 @@
 #
 #===================================================================================================
 
-
+#---------------------------------------------------------------------------------------------------
 # create directory structure for kraken database
 KRAKEN_HOME="/data/indices/kraken"
 DB="fludb_20150430"
 BASE="$KRAKEN_HOME/$DB"
 mkdir -p $KRAKEN_HOME/$DB/{taxonomy,library/Contaminants,raw/individuals/bad}
 
+#---------------------------------------------------------------------------------------------------
+# taxid offsets
+# As of May 1, 2015, the largest taxon ID in the NCBI taxonomy was 1647164,
+#   so starting at one billion and two billion below allows many more taxids
+#   to be added to the NCBI taxonomy without worry of collision
+# This database creates a new hierarchy for flu creating a new set of taxids
 
+# Flu segments, subtypes, and years are given taxids starting above $offset1
+offset1=1000000000
+# All of the individual flu strains are given new taxids starting above $offset2
+offset2=2000000000
+
+#---------------------------------------------------------------------------------------------------
 # creating a kraken flu database using data downloaded from:
 #   http://www.fludb.org/brc/influenza_sequence_search_segment_display.spg?method=ShowCleanSearch&decorator=influenza
 
@@ -86,6 +98,7 @@ mkdir -p $KRAKEN_HOME/$DB/{taxonomy,library/Contaminants,raw/individuals/bad}
 
 # I think I just need to create several of these databases and see what they look like
 
+#---------------------------------------------------------------------------------------------------
 
 # There is an issue with nine files where the host is labeled as "Host:	Tufted Duck" or "Host:	Northern Shoveler" with a tab in the middle of the header string
 grep $'\t' "$BASE/raw/InfA.fasta"
@@ -129,9 +142,6 @@ tar -xzf "$KRAKEN_HOME/$DB/taxonomy/gi_taxid_nucl.dmp.gz"
 #---------------------------------------------------------------------------------------------------
 
 # initializing names.new and nodes.new
-
-# new taxids will start at this value + 1
-offset1=1000000000
 
 # initialize names.new with Influenza A segments
 echo -e "$(($offset1+1))\t|\tPB2\t|\t\t|\tscientific name\t|" >> "$BASE/taxonomy/names.new"
@@ -388,7 +398,6 @@ taxonomy_build() {
 }
 
 # create list of new taxids + filenames
-offset2=2000000000
 find "$BASE/raw/individuals/" -maxdepth 1 -name "*.fna" -print0 | \
 	awk -v OFFSET=$offset2 'BEGIN {RS="\000"};  {printf("%d\t%s\n", NR+OFFSET, $0)}' > "$BASE/library/filenames.txt"
 
