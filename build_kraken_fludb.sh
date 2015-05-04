@@ -27,6 +27,13 @@ offset1=1000000000
 offset2=2000000000
 
 #---------------------------------------------------------------------------------------------------
+# taxid selections
+# These are the taxon IDs that we will be saving from the NCBI taxonomy.
+# All taxids that are above these (more general) in the hierarchy will also be saved.
+# In order, these taxids refer to Influenza A, Influenza B, human, pig, dog, chicken
+taxid_list=(11320 11520 9606 9825 9615 9031)
+
+#---------------------------------------------------------------------------------------------------
 # creating a kraken flu database using data downloaded from:
 #   http://www.fludb.org/brc/influenza_sequence_search_segment_display.spg?method=ShowCleanSearch&decorator=influenza
 
@@ -133,11 +140,45 @@ sed '$!N;s/\n/\t/' "$BASE/raw/InfB.fixed.fasta" | cut -f1 | cut -d"|" -f4 | cut 
 
 #---------------------------------------------------------------------------------------------------
 
-# initializing names.dmp, nodes.dmp, gi_taxid_nucl.dmp
+# initializing names.dmp and nodes.dmp
 wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz -O "$KRAKEN_HOME/$DB/taxonomy/taxdump.tar.gz"
-wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz -O "$KRAKEN_HOME/$DB/taxonomy/gi_taxid_nucl.dmp.gz"
 tar -xzf "$KRAKEN_HOME/$DB/taxonomy/taxdump.tar.gz"
-tar -xzf "$KRAKEN_HOME/$DB/taxonomy/gi_taxid_nucl.dmp.gz"
+mv "$KRAKEN_HOME/$DB/taxonomy/names.dmp" "$KRAKEN_HOME/$DB/taxonomy/names.dmp.full"
+mv "$KRAKEN_HOME/$DB/taxonomy/nodes.dmp" "$KRAKEN_HOME/$DB/taxonomy/nodes.dmp.full"
+
+# recursively identify parents from a NCBI taxonomy file (i.e. nodes.dmp)
+all_parents() {
+
+	id="$1"
+	nodes_file="$2"
+	output="$3"
+
+	parent_id=$(grep "^$id"$'\t' "$nodes_file" | cut -f3)
+
+	if [[ $parent_id -eq $id ]]; then
+		echo -e "$id\n$output"
+	else
+		if [[ -n "$output" ]]; then
+			all_parents $parent_id $nodes_file "$id\n$output"
+		else
+			all_parents $parent_id $nodes_file "$id"
+		fi
+	fi
+}
+
+# subset to only taxids in $taxid_list as defined at the top of this file
+for i in $(seq 0 ${#taxid_list}); do
+	all_parents ${taxid_list[$i]} "$BASE/taxonomy/nodes.dmp.full" >> "$BASE/taxonomy/taxids.temp"
+done
+sort -n "$BASE/taxonomy/taxids.temp" | uniq > "$BASE/taxonomy/taxids.list" && rm "$BASE/taxonomy/taxids.temp"
+
+# subset names.dmp to only taxids in taxids.list
+rm "$BASE/taxonomy/{names,nodes,gi_taxid_nucl}.dmp.subset"
+while read taxid; do
+	grep "^$taxid"$'\t' "$BASE/taxonomy/names.dmp.full" >> "$BASE/taxonomy/names.dmp"
+	grep "^$taxid"$'\t' "$BASE/taxonomy/nodes.dmp.full" >> "$BASE/taxonomy/nodes.dmp"
+#	grep $'\t'"$taxid$" "$BASE/taxonomy/gi_taxid_nucl.dmp.full" >> "$BASE/taxonomy/gi_taxid_nucl.dmp"
+done < "$BASE/taxonomy/taxids.list"
 
 #---------------------------------------------------------------------------------------------------
 
